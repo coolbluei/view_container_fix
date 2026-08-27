@@ -1,0 +1,5 @@
+name: Views Container Fix
+type: module
+description: 'Moves the views-element-container CSS class from the inner container to the block wrapper for Views blocks. Fixes styling after Drupal core updates that changed Views block markup.'
+core_version_requirement: ^9 || ^10 || ^11
+package: Custom

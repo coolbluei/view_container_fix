@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * @file
+ * Fixes Views block markup by moving views-element-container class to the
+ * block wrapper.
+ */
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function views_container_fix_preprocess_block(&$variables) {
+  // Restore search-block-form class on the search form block wrapper,
+  // and remove it from the inner <form> tag to avoid duplication.
+  if ($variables['plugin_id'] === 'search_form_block') {
+    $variables['attributes']['class'][] = 'search-block-form';
+    if (!empty($variables['content']['#attributes']['class'])) {
+      $variables['content']['#attributes']['class'] = array_values(
+        array_diff($variables['content']['#attributes']['class'], ['search-block-form'])
+      );
+    }
+  }
+
+  // Fix language switcher block: move language-switcher-language-url class
+  // back to the block wrapper and restore the 'links' class on the <ul>.
+  if ($variables['plugin_id'] === 'language_block:language_interface') {
+    $variables['attributes']['class'][] = 'language-switcher-language-url';
+    $variables['attributes']['class'] = array_unique($variables['attributes']['class']);
+
+    // Remove the class from the inner content render array.
+    // Drupal may place it on the <ul> element via #attributes.
+    if (!empty($variables['content']['#attributes']['class'])) {
+      $variables['content']['#attributes']['class'] = array_values(
+        array_diff($variables['content']['#attributes']['class'], ['language-switcher-language-url'])
+      );
+      // Restore the 'links' class that Drupal used to put on the <ul>.
+      if (!in_array('links', $variables['content']['#attributes']['class'])) {
+        $variables['content']['#attributes']['class'][] = 'links';
+      }
+    }
+    // Also check nested render elements (e.g. when the block wraps content
+    // in a container).
+    if (isset($variables['content'][0]['#attributes']['class'])) {
+      $variables['content'][0]['#attributes']['class'] = array_values(
+        array_diff($variables['content'][0]['#attributes']['class'], ['language-switcher-language-url'])
+      );
+    }
+  }
+
+  // Only act on Views display blocks.
+  if (strpos($variables['plugin_id'], 'views_block:') !== 0) {
+    return;
+  }
+
+  // Add the class to the block wrapper so CSS can target it.
+  $variables['attributes']['class'][] = 'views-element-container';
+  $variables['attributes']['class'] = array_unique($variables['attributes']['class']);
+
+  // The Views render element (#type => 'view') uses #theme_wrappers = ['container']
+  // and adds 'views-element-container' to #attributes. Remove the class from
+  // the inner wrapper to avoid duplicate styling.
+  if (isset($variables['content']['#type']) && $variables['content']['#type'] === 'view') {
+    if (!empty($variables['content']['#attributes']['class'])) {
+      $variables['content']['#attributes']['class'] = array_values(
+        array_diff($variables['content']['#attributes']['class'], ['views-element-container'])
+      );
+    }
+  }
+}
