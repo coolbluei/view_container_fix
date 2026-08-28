@@ -1,0 +1,8 @@
+{
+    "name": "coolbluei/view_container_fix",
+    "description": "Resolves markup change in views template for Drupal 11",
+    "type": "drupal-module",
+    "require": {
+        "drupal/core": "^11"
+    }
+}
